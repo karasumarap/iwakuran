@@ -109,6 +109,11 @@ function App() {
     setShowedExecutor(null);
   };
 
+  // 十字架を削除
+  const handleDeleteCross = (index: number) => {
+    setCrosses(crosses.filter((_, i) => i !== index));
+  };
+
   // 十字架シャッフルを開始
   const handleStartShuffle = () => {
     setPhase("register");
@@ -117,6 +122,14 @@ function App() {
   // 新春福袋（準備中）
   const handleStartFukubukuro = () => {
     alert("新春福袋は準備中です！お楽しみに🎁");
+  };
+
+  // 町田商店公式HP
+  const handleMachidaShoten = () => {
+    const confirmed = window.confirm("あなたは20歳以上ですか？");
+    if (confirmed) {
+      window.open("https://www.machidashoten.com/", "_blank");
+    }
   };
 
   // --- 画面分岐 ---
@@ -148,6 +161,12 @@ function App() {
           >
             🎁 新春福袋 🎁
           </button>
+          <button
+            onClick={handleMachidaShoten}
+            className="w-full max-w-md bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-white font-bold rounded-xl text-2xl py-6 shadow-2xl hover:from-amber-700 hover:via-amber-600 hover:to-amber-700 transition-all transform hover:scale-105"
+          >
+            🍜 町田商店公式HP 🍜
+          </button>
         </main>
       </div>
     );
@@ -170,18 +189,25 @@ function App() {
             執行者決定
           </div>
         </header>
-        <main className="flex-1 flex flex-col items-center px-4">
-          <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 mt-4 flex flex-col items-center">
-            <h2 className="text-xl font-semibold text-center mb-4 text-pink-600">{crosses[showIdx]?.name}</h2>
+        <main className="flex-1 flex flex-col items-center justify-center px-4">
+          <div className="w-full max-w-md flex flex-col items-center gap-6">
+            {/* 十字架名カード */}
+            <div className="w-full bg-white/100 rounded-2xl shadow-2xl p-10 border-4 border-pink-300" style={{ backgroundColor: '#ffffff' }}>
+              <h2 className="text-5xl font-black text-center text-pink-700 break-words leading-tight">{crosses[showIdx]?.name}</h2>
+            </div>
+            
             {showedExecutor ? (
               <>
-                <div className="text-4xl font-bold text-pink-500 mb-4 animate-bounce">{showedExecutor}</div>
+                {/* 執行者名カード */}
+                <div className="w-full bg-white/100 rounded-2xl shadow-2xl p-10 border-4 border-pink-400" style={{ backgroundColor: '#ffffff' }}>
+                  <div className="text-6xl font-black text-pink-600 text-center animate-bounce break-words leading-tight">{showedExecutor}</div>
+                </div>
                 {showIdx < crosses.length - 1 ? (
-                  <button onClick={handleNext} className="bg-yellow-300 text-pink-700 font-bold rounded-xl py-3 px-8 text-xl shadow hover:bg-yellow-400 transition mt-2">次へ</button>
+                  <button onClick={handleNext} className="w-full bg-yellow-300 text-pink-700 font-bold rounded-xl py-5 px-8 text-2xl shadow-xl hover:bg-yellow-400 transition transform hover:scale-[1.02]">次へ</button>
                 ) : null}
               </>
             ) : (
-              <button onClick={handleShowExecutor} className="bg-pink-500 text-white font-bold rounded-xl py-3 px-8 text-xl shadow hover:bg-pink-600 transition">執行者を表示</button>
+              <button onClick={handleShowExecutor} className="w-full bg-yellow-300 text-pink-700 font-bold rounded-xl py-5 px-8 text-2xl shadow-xl hover:bg-yellow-400 transition transform hover:scale-[1.02]">執行者を表示</button>
             )}
           </div>
         </main>
@@ -207,54 +233,97 @@ function App() {
       <header className="text-center py-6">
         <div className="inazuma-title inazuma-glow select-none">岩倉魂</div>
       </header>
-      <main className="flex-1 flex flex-col items-center px-4">
+      <main className="flex-1 flex flex-col items-center px-4 pb-6">
         <div className="w-full max-w-md inazuma-card mt-4">
-          <h2 className="text-xl font-bold text-center mb-4 text-yellow-500 inazuma-glow select-none">十字架登録</h2>
-          <form className="flex flex-col gap-3" onSubmit={e => { e.preventDefault(); if (!name.trim() || !executor.trim()) return; setCrosses([...crosses, { name: name.trim(), executor: executor.trim() }]); setName(""); setExecutor(""); }}>
-            <input
-              type="text"
-              placeholder="十字架名"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className="rounded px-3 py-2 border-2 border-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-white text-lg font-bold shadow"
-            />
-            <input
-              type="text"
-              placeholder="元の執行者"
-              value={executor}
-              onChange={e => setExecutor(e.target.value)}
-              className="rounded px-3 py-2 border-2 border-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-white text-lg font-bold shadow"
-            />
+          <h2 className="text-2xl font-bold text-center mb-6 text-yellow-500 inazuma-glow select-none">⚡️ 十字架登録 ⚡️</h2>
+          
+          <form className="flex flex-col gap-6" onSubmit={e => { e.preventDefault(); if (!name.trim() || !executor.trim()) return; setCrosses([...crosses, { name: name.trim(), executor: executor.trim() }]); setName(""); setExecutor(""); }}>
+            {/* 十字架名入力 */}
+            <div>
+              <label className="block text-base font-black text-gray-700 mb-2 ml-1">
+                📛 十字架名
+              </label>
+              <input
+                type="text"
+                placeholder="例：1週間の米禁止"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                autoFocus
+                className="w-full rounded-2xl px-6 py-7 border-4 border-yellow-300 focus:outline-none focus:ring-4 focus:ring-yellow-400 focus:border-yellow-500 bg-white text-3xl font-black shadow-xl transition-all focus:scale-[1.02] placeholder:text-gray-300"
+              />
+              <p className="text-xs text-gray-500 mt-1 ml-1">罰ゲームや課題の内容を入力</p>
+            </div>
+            
+            {/* 執行者入力 */}
+            <div>
+              <label className="block text-base font-black text-gray-700 mb-2 ml-1">
+                👤 元の執行者
+              </label>
+              <input
+                type="text"
+                placeholder="例：佐倉 杏子"
+                value={executor}
+                onChange={e => setExecutor(e.target.value)}
+                className="w-full rounded-2xl px-6 py-7 border-4 border-yellow-300 focus:outline-none focus:ring-4 focus:ring-yellow-400 focus:border-yellow-500 bg-white text-3xl font-black shadow-xl transition-all focus:scale-[1.02] placeholder:text-gray-300"
+              />
+              <p className="text-xs text-gray-500 mt-1 ml-1">現在の実行者の名前を入力</p>
+            </div>
+            
             <button
               type="submit"
-              className="inazuma-btn mt-2"
+              className="inazuma-btn mt-2 py-5 text-2xl disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={!name.trim() || !executor.trim()}
             >
-              追加
+              ✨ 追加する
             </button>
           </form>
-          <div className="mt-6">
-            <h3 className="font-bold text-yellow-500 mb-2 inazuma-glow select-none">登録済み十字架</h3>
-            <ul className="space-y-1 text-gray-700 text-lg min-h-[2em]">
+          
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-bold text-yellow-500 inazuma-glow select-none text-lg">📋 登録済み十字架</h3>
+              <span className="text-sm font-bold text-gray-700 bg-yellow-100 px-4 py-2 rounded-full shadow-md">
+                {crosses.length}件
+              </span>
+            </div>
+            
+            <ul className="space-y-3 text-gray-700 text-lg min-h-[2em] max-h-[400px] overflow-y-auto">
               {crosses.length === 0 ? (
-                <li className="italic text-gray-400">（ここに十字架が表示されます）</li>
+                <li className="italic text-gray-400 text-center py-8 bg-white/50 rounded-xl">
+                  （ここに十字架が表示されます）
+                </li>
               ) : (
                 crosses.map((c, i) => (
                   <li
                     key={i}
-                    className="bg-white/95 rounded-2xl shadow-2xl border-2 border-transparent px-6 py-4 mb-4 hover:scale-105 hover:shadow-yellow-200 transition-all duration-200 group overflow-hidden"
+                    className="bg-white/95 rounded-2xl shadow-2xl border-2 border-transparent hover:scale-[1.02] hover:shadow-yellow-200 transition-all duration-200 group overflow-hidden flex items-center gap-3 pr-3 pl-6 py-5"
                     style={{ boxShadow: '0 6px 32px 0 rgba(255, 193, 7, 0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)' }}
                   >
-                    <div className="flex flex-col min-w-0">
-                      <span className="font-extrabold text-blue-800 text-lg truncate tracking-wide drop-shadow">十字架名：{c.name}</span>
-                      <span className="mt-2 text-yellow-700 text-base font-bold">執行者：{c.executor}</span>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="font-extrabold text-blue-800 text-xl truncate tracking-wide drop-shadow">📛 {c.name}</span>
+                      <span className="mt-2 text-yellow-700 text-lg font-bold">👤 {c.executor}</span>
                     </div>
+                    <button
+                      onClick={() => handleDeleteCross(i)}
+                      className="flex-shrink-0 w-12 h-12 rounded-full bg-red-500 text-white font-bold hover:bg-red-600 transition-all hover:scale-110 flex items-center justify-center text-xl shadow-lg"
+                      aria-label="削除"
+                    >
+                      ✕
+                    </button>
                   </li>
                 ))
               )}
             </ul>
+            
+            {crosses.length > 0 && crosses.length < 2 && (
+              <div className="mt-4 text-center bg-pink-50 border-2 border-pink-300 rounded-xl py-3 px-4">
+                <p className="text-sm text-pink-700 font-bold">
+                  ⚠️ あと{2 - crosses.length}件登録すると交換できます
+                </p>
+              </div>
+            )}
+            
             <button
-              className="w-full inazuma-btn mt-4 py-3 disabled:opacity-50"
+              className="w-full inazuma-btn mt-4 py-5 text-2xl disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleExchange}
               disabled={crosses.length < 2}
             >
