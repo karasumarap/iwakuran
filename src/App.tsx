@@ -13,7 +13,7 @@ type Cross = {
 
 const STORAGE_KEY = "iwakuran_crosses";
 
-type Phase = "menu" | "register" | "exchange" | "ready" | "show" | "result";
+type Phase = "menu" | "intro" | "register" | "exchange" | "ready" | "show" | "result";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -116,8 +116,13 @@ function App() {
     setCrosses(crosses.filter((_, i) => i !== index));
   };
 
-  // 十字架シャッフルを開始
+  // 十字架シャッフルを開始（説明画面へ）
   const handleStartShuffle = () => {
+    setPhase("intro");
+  };
+
+  // 登録画面へ進む
+  const handleStartRegister = () => {
     setPhase("register");
   };
 
@@ -174,6 +179,87 @@ function App() {
     );
   }
 
+  if (phase === "intro") {
+    return (
+      <div className="min-h-screen flex flex-col bg-white py-6">
+        <div className="fixed top-2 right-2 z-50">
+          <button
+            className="bg-white/80 border border-yellow-300 rounded-lg px-3 py-1 shadow hover:bg-yellow-100 transition text-sm font-bold"
+            onClick={() => setBgmOn((v) => !v)}
+          >
+            {bgmOn ? "BGM OFF" : "BGM ON"}
+          </button>
+        </div>
+        <header className="text-center py-6 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 mx-auto max-w-md border-4 border-yellow-300">
+            <div className="inazuma-title inazuma-glow select-none text-5xl">岩倉魂</div>
+          </div>
+        </header>
+        <main className="flex-1 flex flex-col items-center justify-center px-4 pb-12">
+          <div className="w-full max-w-2xl space-y-6">
+            {/* タイトルカード */}
+            <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-pink-400">
+              <h1 className="text-4xl font-black text-center text-pink-700">
+                ⚡️ 十字架シャッフルとは ⚡️
+              </h1>
+            </div>
+
+            {/* 説明テキストカード */}
+            <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-pink-300 space-y-5">
+              <div className="bg-white rounded-2xl p-5 border-4 border-pink-200 shadow-lg">
+                <p className="font-bold text-2xl leading-relaxed text-gray-800">
+                  人は皆、<span className="text-pink-600 font-black">十字架（罰ゲーム）</span>を背負っている。
+                </p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-5 border-4 border-yellow-300 shadow-lg">
+                <p className="font-bold text-2xl leading-relaxed text-gray-800">
+                  そんな十字架を背負いし者のみが参加できる<span className="text-yellow-700 font-black">儀式</span>があるのだ。
+                </p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-8 border-4 border-pink-400 shadow-xl">
+                <p className="font-black text-3xl text-center text-pink-700 leading-tight">
+                  その名は、<br />
+                  <span className="text-5xl inazuma-glow block mt-3">「十字架シャッフル」</span>
+                </p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-5 border-4 border-red-300 shadow-lg">
+                <p className="font-bold text-2xl leading-relaxed text-gray-800">
+                  自分の十字架と、他のプレイヤーの十字架を<span className="text-red-600 font-black">交換</span>する悪魔的儀式。
+                </p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
+                <p className="font-bold text-center text-3xl text-gray-800 leading-tight">
+                  参加するもしないも<br />
+                  <span className="text-pink-600 font-black text-4xl">諸君次第</span>だ。
+                </p>
+              </div>
+            </div>
+
+            {/* ボタンカード */}
+            <div className="bg-white rounded-3xl shadow-2xl p-6 border-4 border-pink-300 flex flex-col gap-4">
+              <button
+                onClick={handleStartRegister}
+                className="w-full inazuma-btn text-2xl py-6 shadow-2xl transform hover:scale-105 transition-all"
+              >
+                <span className="inazuma-glow">⚡️ 儀式に参加する ⚡️</span>
+              </button>
+              <button
+                onClick={() => setPhase("menu")}
+                className="w-full bg-gray-300 text-gray-700 font-bold rounded-xl text-xl py-4 shadow hover:bg-gray-400 transition"
+              >
+                戻る
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   if (phase === "exchange") {
     return (
       <FullscreenVideo
@@ -186,6 +272,14 @@ function App() {
   if (phase === "ready") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-yellow-100 to-pink-200 px-4">
+        <div className="fixed top-2 right-2 z-50">
+          <button
+            className="bg-white/80 border border-yellow-300 rounded-lg px-3 py-1 shadow hover:bg-yellow-100 transition text-sm font-bold"
+            onClick={() => setBgmOn((v) => !v)}
+          >
+            {bgmOn ? "BGM OFF" : "BGM ON"}
+          </button>
+        </div>
         <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 text-center">
           <h1 className="text-4xl font-black text-pink-700 mb-6">🎯 準備完了！</h1>
           <p className="text-xl text-gray-700 mb-8 leading-relaxed">
@@ -206,6 +300,14 @@ function App() {
   if (phase === "show") {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-yellow-100 to-pink-200">
+        <div className="fixed top-2 right-2 z-50">
+          <button
+            className="bg-white/80 border border-yellow-300 rounded-lg px-3 py-1 shadow hover:bg-yellow-100 transition text-sm font-bold"
+            onClick={() => setBgmOn((v) => !v)}
+          >
+            {bgmOn ? "BGM OFF" : "BGM ON"}
+          </button>
+        </div>
         <header className="text-center py-6">
           <div className="bg-white rounded-lg shadow-lg p-4 mx-4 text-2xl font-bold tracking-widest text-pink-700">
             執行者決定
