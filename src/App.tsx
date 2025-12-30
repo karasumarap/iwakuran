@@ -6,6 +6,7 @@ import { useYouTubeBGM } from "./hooks/useYouTubeBGM";
 import { FullscreenVideo } from "./components/FullscreenVideo";
 import { ResultList } from "./components/ResultList";
 import sakuBg from "./assets/saku.png";
+import pieroBg from "./assets/piero.png";
 
 type Cross = {
   name: string;
@@ -14,7 +15,7 @@ type Cross = {
 
 const STORAGE_KEY = "iwakuran_crosses";
 
-type Phase = "menu" | "intro" | "register" | "exchange" | "ready" | "show" | "result" | "tripleIntro" | "tripleConfirm" | "tripleRoulette" | "tripleResult";
+type Phase = "menu" | "intro" | "register" | "exchange" | "ready" | "show" | "result" | "tripleIntro" | "tripleConfirm" | "tripleRoulette" | "tripleVideo" | "tripleResult";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -207,9 +208,15 @@ function App() {
     setRouletteResult(currentRouletteText);
     setIsRouletteSpinning(false);
     
-    // 1秒後に結果画面へ
+    // 1秒後に結果画面または画像表示へ
     setTimeout(() => {
-      setPhase("tripleResult");
+      if (currentRouletteText === "3倍") {
+        // 3倍の場合はpiero.pngを表示
+        setPhase("tripleVideo");
+      } else {
+        // 消滅の場合は直接結果画面へ
+        setPhase("tripleResult");
+      }
     }, 1000);
   };
 
@@ -637,6 +644,37 @@ function App() {
     );
   }
 
+  // --- 3倍時のpiero.png表示画面 ---
+  if (phase === "tripleVideo") {
+    return (
+      <div 
+        className="min-h-screen flex flex-col items-center justify-center"
+        style={{
+          background: `url(${pieroBg}) center center/cover no-repeat fixed`,
+          backgroundColor: '#000000'
+        }}
+      >
+        <button
+          onClick={() => setPhase("tripleResult")}
+          className="absolute top-4 right-4 z-[60] bg-white/20 hover:bg-white/40 rounded-full w-12 h-12 flex items-center justify-center text-white text-2xl font-bold backdrop-blur-sm transition-all hover:scale-110"
+          aria-label="画面をスキップ"
+        >
+          ✕
+        </button>
+        {/* 3秒後に自動で結果画面へ */}
+        <div className="fixed bottom-8 left-0 right-0 text-center">
+          <p className="text-white text-xl font-bold drop-shadow-lg">
+            タップで結果画面へ
+          </p>
+        </div>
+        <div 
+          className="w-full h-full cursor-pointer"
+          onClick={() => setPhase("tripleResult")}
+        />
+      </div>
+    );
+  }
+
   // --- 消滅or3倍 結果画面 ---
   if (phase === "tripleResult") {
     return (
@@ -686,10 +724,10 @@ function App() {
                 {rouletteResult === "3倍" && (
                   <div className="bg-green-50 rounded-2xl p-6 border-2 border-green-300">
                     <p className="text-2xl font-bold text-green-700">
-                      😱 残念！<br />
-                      十字架が3倍になりました！<br />
+                      あら❤️いやだぁ❤️残念<br />
+                      ぼくちゃんの十字架が3倍になっちゃったわね❤️<br />
                       <span className="text-lg mt-2 block">
-                        （期間を3倍に変更してください）
+                        あたしが慰めてあ・げ・る！
                       </span>
                     </p>
                   </div>
