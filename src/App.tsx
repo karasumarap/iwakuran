@@ -26,8 +26,8 @@ function shuffle<T>(arr: T[]): T[] {
 
 function App() {
   const BGM_LIST = [
-    { label: "通常BGM", src: "/baseBGM.mp3" },
-    { label: "鼓動BGM", src: "/heartbeat.mp3" },
+    { label: "通常BGM", src: `${import.meta.env.BASE_URL}baseBGM.mp3` },
+    { label: "鼓動BGM", src: `${import.meta.env.BASE_URL}heartbeat.mp3` },
   ];
   const [bgmIdx, setBgmIdx] = useState(0);
   const [bgmOn, setBgmOn] = useState(true);
