@@ -109,14 +109,6 @@ function App() {
     setShowedExecutor(null);
   };
 
-  // メニュー画面へ戻る
-  const handleBackToMenu = () => {
-    setPhase("menu");
-    setResults([]);
-    setShowIdx(0);
-    setShowedExecutor(null);
-  };
-
   // 十字架シャッフルを開始
   const handleStartShuffle = () => {
     setPhase("register");
