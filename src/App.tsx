@@ -283,14 +283,6 @@ function App() {
   if (phase === "ready") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-yellow-100 to-pink-200 px-4">
-        <div className="fixed top-2 right-2 z-50">
-          <button
-            className="bg-white/80 border border-yellow-300 rounded-lg px-3 py-1 shadow hover:bg-yellow-100 transition text-sm font-bold"
-            onClick={() => setBgmOn((v) => !v)}
-          >
-            {bgmOn ? "BGM OFF" : "BGM ON"}
-          </button>
-        </div>
         <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 text-center">
           <button
             onClick={handleStartShow}
