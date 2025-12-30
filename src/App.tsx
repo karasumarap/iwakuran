@@ -13,7 +13,7 @@ type Cross = {
 
 const STORAGE_KEY = "iwakuran_crosses";
 
-type Phase = "menu" | "register" | "exchange" | "show" | "result";
+type Phase = "menu" | "register" | "exchange" | "ready" | "show" | "result";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -32,7 +32,7 @@ function App() {
   const [crosses, setCrosses] = useState<Cross[]>([]);
   const [phase, setPhase] = useState<Phase>("menu");
   // 動画再生中と結果発表画面では基本BGMを停止
-  useYouTubeBGM(BGM_VIDEO_ID, bgmOn && phase !== "exchange" && phase !== "result");
+  useYouTubeBGM(BGM_VIDEO_ID, bgmOn && phase !== "exchange" && phase !== "ready" && phase !== "result");
   const [showIdx, setShowIdx] = useState(0);
   const [results, setResults] = useState<{ name: string; originalExecutor: string; newExecutor: string }[]>([]);
   const [shuffledExecutors, setShuffledExecutors] = useState<string[]>([]);
@@ -57,13 +57,18 @@ function App() {
     setPhase("exchange");
   };
 
-  // 動画終了後、執行者決定フェーズへ
+  // 動画終了後、準備画面へ
   const handleVideoEnd = () => {
     // 執行者をシャッフル
     setShuffledExecutors(shuffle(crosses.map(c => c.executor)));
     setShowIdx(0);
     setResults([]);
     setShowedExecutor(null);
+    setPhase("ready");
+  };
+
+  // 準備完了、執行者決定開始
+  const handleStartShow = () => {
     setPhase("show");
   };
 
@@ -178,6 +183,26 @@ function App() {
     );
   }
 
+  if (phase === "ready") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-yellow-100 to-pink-200 px-4">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 text-center">
+          <h1 className="text-4xl font-black text-pink-700 mb-6">🎯 準備完了！</h1>
+          <p className="text-xl text-gray-700 mb-8 leading-relaxed">
+            執行者のシャッフルが完了しました。<br />
+            ボタンを押して結果を確認しましょう！
+          </p>
+          <button
+            onClick={handleStartShow}
+            className="w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white font-black rounded-2xl py-6 text-2xl shadow-xl hover:from-pink-600 hover:to-pink-700 transition-all transform hover:scale-105"
+          >
+            ⚡️ 執行者決定を開始 ⚡️
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (phase === "show") {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-yellow-100 to-pink-200">
@@ -245,7 +270,6 @@ function App() {
                 placeholder="例：1週間の米禁止"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                autoFocus
                 className="w-full rounded-2xl px-6 py-7 border-4 border-yellow-300 focus:outline-none focus:ring-4 focus:ring-yellow-400 focus:border-yellow-500 bg-white text-3xl font-black shadow-xl transition-all focus:scale-[1.02] placeholder:text-gray-300"
               />
               <p className="text-xs text-gray-500 mt-1 ml-1">罰ゲームや課題の内容を入力</p>
