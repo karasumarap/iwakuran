@@ -163,7 +163,7 @@ function App() {
   if (phase === "exchange") {
     return (
       <FullscreenVideo
-        src="https://www.w3schools.com/html/mov_bbb.mp4" // 仮の動画URL
+        src={`${import.meta.env.BASE_URL}inazumabigban.mp4`}
         onEnd={handleVideoEnd}
       />
     );
