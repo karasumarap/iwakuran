@@ -37,13 +37,12 @@ function App() {
   const [results, setResults] = useState<{ name: string; originalExecutor: string; newExecutor: string }[]>([]);
   const [shuffledExecutors, setShuffledExecutors] = useState<string[]>([]);
   const [showedExecutor, setShowedExecutor] = useState<string | null>(null);
-  const [selectedCrossIndex, setSelectedCrossIndex] = useState<number>(-1);
   const [rouletteResult, setRouletteResult] = useState<"消滅" | "3倍" | null>(null);
   const [isRouletteSpinning, setIsRouletteSpinning] = useState(false);
   const [tripleCrossName, setTripleCrossName] = useState("");
   const [tripleCrossExecutor, setTripleCrossExecutor] = useState("");
   const [currentRouletteText, setCurrentRouletteText] = useState<"消滅" | "3倍">("消滅");
-  const [rouletteInterval, setRouletteInterval] = useState<NodeJS.Timeout | null>(null);
+  const [rouletteInterval, setRouletteInterval] = useState<number | null>(null);
 
   // LocalStorageから初期値取得
   useEffect(() => {
