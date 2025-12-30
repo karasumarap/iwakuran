@@ -13,7 +13,7 @@ type Cross = {
 
 const STORAGE_KEY = "iwakuran_crosses";
 
-type Phase = "menu" | "intro" | "register" | "exchange" | "ready" | "show" | "result";
+type Phase = "menu" | "intro" | "register" | "exchange" | "ready" | "show" | "result" | "tripleIntro" | "tripleConfirm" | "tripleRoulette" | "tripleResult";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -37,6 +37,13 @@ function App() {
   const [results, setResults] = useState<{ name: string; originalExecutor: string; newExecutor: string }[]>([]);
   const [shuffledExecutors, setShuffledExecutors] = useState<string[]>([]);
   const [showedExecutor, setShowedExecutor] = useState<string | null>(null);
+  const [selectedCrossIndex, setSelectedCrossIndex] = useState<number>(-1);
+  const [rouletteResult, setRouletteResult] = useState<"消滅" | "3倍" | null>(null);
+  const [isRouletteSpinning, setIsRouletteSpinning] = useState(false);
+  const [tripleCrossName, setTripleCrossName] = useState("");
+  const [tripleCrossExecutor, setTripleCrossExecutor] = useState("");
+  const [currentRouletteText, setCurrentRouletteText] = useState<"消滅" | "3倍">("消滅");
+  const [rouletteInterval, setRouletteInterval] = useState<NodeJS.Timeout | null>(null);
 
   // LocalStorageから初期値取得
   useEffect(() => {
@@ -154,6 +161,74 @@ function App() {
     }
   };
 
+  // 十字架消滅or3倍を開始
+  const handleStartTriple = () => {
+    setTripleCrossName("");
+    setTripleCrossExecutor("");
+    setRouletteResult(null);
+    setPhase("tripleIntro");
+  };
+
+  // 十字架入力画面へ
+  const handleSelectCross = () => {
+    setPhase("tripleConfirm");
+  };
+
+  // ルーレット開始
+  const handleStartRoulette = () => {
+    if (!tripleCrossName.trim() || !tripleCrossExecutor.trim()) {
+      alert("十字架名と執行者を入力してください！");
+      return;
+    }
+    setPhase("tripleRoulette");
+    setRouletteResult(null);
+  };
+
+  // ルーレット実行
+  const handleSpinRoulette = () => {
+    setIsRouletteSpinning(true);
+    
+    // テキストを高速で切り替える（ユーザーがstopボタンを押すまで無限に）
+    const interval = setInterval(() => {
+      setCurrentRouletteText(prev => prev === "消滅" ? "3倍" : "消滅");
+    }, 100);
+    
+    setRouletteInterval(interval);
+  };
+
+  // ルーレット停止
+  const handleStopRoulette = () => {
+    if (rouletteInterval) {
+      clearInterval(rouletteInterval);
+      setRouletteInterval(null);
+    }
+    
+    // 現在表示されているテキストを結果とする
+    setRouletteResult(currentRouletteText);
+    setIsRouletteSpinning(false);
+    
+    // 1秒後に結果画面へ
+    setTimeout(() => {
+      setPhase("tripleResult");
+    }, 1000);
+  };
+
+  // 3倍チャレンジ後にメニューへ戻る
+  const handleTripleHome = () => {
+    // インターバルをクリア
+    if (rouletteInterval) {
+      clearInterval(rouletteInterval);
+      setRouletteInterval(null);
+    }
+    // 消滅or3倍の結果は表示のみで、実際の処理はユーザー任せ
+    setTripleCrossName("");
+    setTripleCrossExecutor("");
+    setRouletteResult(null);
+    setCurrentRouletteText("消滅");
+    setIsRouletteSpinning(false);
+    setPhase("menu");
+  };
+
   // --- 画面分岐 ---
   if (phase === "menu") {
     return (
@@ -176,6 +251,12 @@ function App() {
             className="w-full max-w-md inazuma-btn text-2xl py-6 shadow-2xl transform hover:scale-105 transition-all"
           >
             <span className="inazuma-glow">⚡️ 十字架シャッフル ⚡️</span>
+          </button>
+          <button
+            onClick={handleStartTriple}
+            className="w-full max-w-md bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 text-white font-bold rounded-xl text-2xl py-6 shadow-2xl hover:from-purple-600 hover:via-pink-600 hover:to-purple-600 transition-all transform hover:scale-105"
+          >
+            💀 十字架〜消滅or3倍〜 💀
           </button>
           <button
             onClick={handleStartFukubukuro}
@@ -341,6 +422,287 @@ function App() {
     return <ResultList results={results} onRetry={handleRetry} onHome={handleHome} />;
   }
 
+  // --- 消滅or3倍 説明画面 ---
+  if (phase === "tripleIntro") {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#ffffff' }}>
+        <div className="fixed top-2 right-2 z-50">
+          <button
+            className="bg-white/80 border border-yellow-300 rounded-lg px-3 py-1 shadow hover:bg-yellow-100 transition text-sm font-bold"
+            onClick={() => setBgmOn((v) => !v)}
+          >
+            {bgmOn ? "BGM OFF" : "BGM ON"}
+          </button>
+        </div>
+        <header className="text-center py-6 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 mx-auto max-w-md border-4 border-purple-300">
+            <h1 className="text-4xl font-black text-purple-700">
+              💀 十字架〜消滅or3倍〜 💀
+            </h1>
+          </div>
+        </header>
+        <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
+          <div className="w-full max-w-2xl space-y-6">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 space-y-5 border-4 border-purple-200">
+              <p className="font-bold text-2xl leading-relaxed text-gray-800 text-center">
+                <span className="text-purple-600 font-black">50%の確率</span>で貴方の十字架が<span className="text-red-600 font-black">消滅</span>し、
+              </p>
+              <p className="font-bold text-2xl leading-relaxed text-gray-800 text-center">
+                <span className="text-purple-600 font-black">50%の確率</span>で貴方の十字架が<span className="text-pink-600 font-black">3倍</span>になります。
+              </p>
+              <div className="bg-pink-50 rounded-2xl p-6 border-2 border-pink-300">
+                <p className="font-bold text-xl text-gray-700 text-center">
+                  （例：米1週間禁止 → 米3週間禁止）
+                </p>
+              </div>
+              <p className="font-black text-3xl text-center text-purple-700 leading-tight mt-6">
+                覚悟は<br />
+                <span className="text-5xl block mt-3">できているか？</span>
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-3xl shadow-2xl p-6 flex flex-col gap-4">
+              <button
+                onClick={handleSelectCross}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white font-black rounded-2xl text-2xl py-6 shadow-xl hover:from-purple-600 hover:to-pink-700 transition-all transform hover:scale-105"
+              >
+                💀 挑戦する 💀
+              </button>
+              <button
+                onClick={() => setPhase("menu")}
+                className="w-full bg-gray-300 text-gray-700 font-bold rounded-xl text-xl py-4 shadow hover:bg-gray-400 transition"
+              >
+                戻る
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // --- 消滅or3倍 十字架入力画面 ---
+  if (phase === "tripleConfirm") {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#ffffff' }}>
+        <div className="fixed top-2 right-2 z-50">
+          <button
+            className="bg-white/80 border border-yellow-300 rounded-lg px-3 py-1 shadow hover:bg-yellow-100 transition text-sm font-bold"
+            onClick={() => setBgmOn((v) => !v)}
+          >
+            {bgmOn ? "BGM OFF" : "BGM ON"}
+          </button>
+        </div>
+        <header className="text-center py-6 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 mx-auto max-w-md border-4 border-purple-300">
+            <h1 className="text-3xl font-black text-purple-700">
+              消滅or3倍チャレンジ<br />やりますか？
+            </h1>
+          </div>
+        </header>
+        <main className="flex-1 flex flex-col items-center px-4 py-6">
+          <div className="w-full max-w-md space-y-6">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 border-4 border-purple-200">
+              <h2 className="text-xl font-black text-center mb-6 text-purple-600">挑戦する十字架を入力</h2>
+              
+              <form className="flex flex-col gap-6" onSubmit={(e) => { e.preventDefault(); handleStartRoulette(); }}>
+                {/* 十字架名入力 */}
+                <div>
+                  <label className="block text-base font-black text-gray-700 mb-2 ml-1">
+                    📛 十字架名
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="例：1週間の米禁止"
+                    value={tripleCrossName}
+                    onChange={e => setTripleCrossName(e.target.value)}
+                    className="w-full rounded-2xl px-6 py-7 border-4 border-purple-300 focus:outline-none focus:ring-4 focus:ring-purple-400 focus:border-purple-500 bg-white text-3xl font-black shadow-xl transition-all focus:scale-[1.02] placeholder:text-gray-300"
+                  />
+                </div>
+                
+                {/* 執行者入力 */}
+                <div>
+                  <label className="block text-base font-black text-gray-700 mb-2 ml-1">
+                    👤 執行者
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="例：佐倉 杏子"
+                    value={tripleCrossExecutor}
+                    onChange={e => setTripleCrossExecutor(e.target.value)}
+                    className="w-full rounded-2xl px-6 py-7 border-4 border-purple-300 focus:outline-none focus:ring-4 focus:ring-purple-400 focus:border-purple-500 bg-white text-3xl font-black shadow-xl transition-all focus:scale-[1.02] placeholder:text-gray-300"
+                  />
+                </div>
+              </form>
+            </div>
+
+            <button
+              onClick={handleStartRoulette}
+              disabled={!tripleCrossName.trim() || !tripleCrossExecutor.trim()}
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white font-black rounded-2xl text-2xl py-6 shadow-xl hover:from-purple-600 hover:to-pink-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              🎰 ルーレットを回す 🎰
+            </button>
+            <button
+              onClick={() => setPhase("tripleIntro")}
+              className="w-full bg-gray-300 text-gray-700 font-bold rounded-xl text-xl py-4 shadow hover:bg-gray-400 transition"
+            >
+              戻る
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // --- 消滅or3倍 ルーレット画面 ---
+  if (phase === "tripleRoulette") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#ffffff' }}>
+        <main className="flex-1 flex flex-col items-center justify-center px-4 w-full">
+          <div className="w-full max-w-md space-y-8">
+            {/* 選択された十字架を表示 */}
+            <div className="bg-purple-100 rounded-3xl shadow-2xl p-6 border-4 border-purple-400">
+              <h2 className="text-2xl font-black text-center text-purple-700 mb-4">挑戦する十字架</h2>
+              <div className="bg-white rounded-2xl p-6 shadow-inner">
+                <div className="font-black text-3xl text-center text-gray-800 break-words">
+                  📛 {tripleCrossName}
+                </div>
+                <div className="text-xl text-center text-gray-600 mt-3">
+                  👤 {tripleCrossExecutor}
+                </div>
+              </div>
+            </div>
+
+            {/* ルーレット */}
+            <div className="bg-white rounded-3xl shadow-2xl p-6 border-4 border-purple-300">
+              {/* ルーレット表示エリア */}
+              <div className="relative w-full max-w-[200px] h-[200px] mx-auto flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl border-8 border-gray-800 shadow-inner">
+                {!rouletteResult && (
+                  <div className={`text-center ${isRouletteSpinning ? "animate-pulse" : ""}`}>
+                    <div 
+                      className={`text-7xl font-black transition-all duration-100 ${
+                        currentRouletteText === "消滅" ? "text-red-500" : "text-green-500"
+                      }`}
+                    >
+                      {currentRouletteText}
+                    </div>
+                  </div>
+                )}
+                
+                {rouletteResult && (
+                  <div className="text-center">
+                    <div 
+                      className="text-7xl font-black animate-bounce"
+                      style={{ color: rouletteResult === "消滅" ? "#ef4444" : "#22c55e" }}
+                    >
+                      {rouletteResult}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {!isRouletteSpinning && !rouletteResult && (
+                <button
+                  onClick={handleSpinRoulette}
+                  className="w-full mt-6 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-black rounded-2xl text-2xl py-6 shadow-xl hover:from-purple-600 hover:to-pink-700 transition-all transform hover:scale-105"
+                >
+                  🎰 回す！ 🎰
+                </button>
+              )}
+
+              {isRouletteSpinning && !rouletteResult && (
+                <div className="mt-4 space-y-3">
+                  <p className="text-center text-2xl font-black text-purple-700 animate-pulse">
+                    ドキドキ...
+                  </p>
+                  <button
+                    onClick={handleStopRoulette}
+                    className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-black rounded-2xl text-3xl py-8 shadow-xl hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 animate-pulse"
+                  >
+                    ⏹️ STOP！ ⏹️
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // --- 消滅or3倍 結果画面 ---
+  if (phase === "tripleResult") {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#ffffff' }}>
+        <div className="fixed top-2 right-2 z-50">
+          <button
+            className="bg-white/80 border border-yellow-300 rounded-lg px-3 py-1 shadow hover:bg-yellow-100 transition text-sm font-bold"
+            onClick={() => setBgmOn((v) => !v)}
+          >
+            {bgmOn ? "BGM OFF" : "BGM ON"}
+          </button>
+        </div>
+        <header className="text-center py-6 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 mx-auto max-w-md border-4 border-purple-300">
+            <h1 className="text-4xl font-black text-purple-700">
+              結果発表
+            </h1>
+          </div>
+        </header>
+        <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
+          <div className="w-full max-w-md space-y-6">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-purple-200">
+              <div className="text-center space-y-6">
+                <div className="bg-purple-50 rounded-2xl p-6">
+                  <p className="text-xl font-bold text-gray-700 mb-2">十字架</p>
+                  <p className="text-3xl font-black text-gray-800 break-words">
+                    {tripleCrossName}
+                  </p>
+                  <p className="text-lg text-gray-600 mt-2">
+                    👤 {tripleCrossExecutor}
+                  </p>
+                </div>
+
+                <div className="text-6xl font-black animate-bounce" style={{ color: rouletteResult === "消滅" ? "#ef4444" : "#22c55e" }}>
+                  {rouletteResult}！
+                </div>
+
+                {rouletteResult === "消滅" && (
+                  <div className="bg-red-50 rounded-2xl p-6 border-2 border-red-300">
+                    <p className="text-2xl font-bold text-red-700">
+                      🎉 おめでとうございます！<br />
+                      十字架が消滅しました！
+                    </p>
+                  </div>
+                )}
+
+                {rouletteResult === "3倍" && (
+                  <div className="bg-green-50 rounded-2xl p-6 border-2 border-green-300">
+                    <p className="text-2xl font-bold text-green-700">
+                      😱 残念！<br />
+                      十字架が3倍になりました！<br />
+                      <span className="text-lg mt-2 block">
+                        （期間を3倍に変更してください）
+                      </span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={handleTripleHome}
+              className="w-full bg-gradient-to-r from-yellow-400 to-yellow-300 text-purple-800 font-black rounded-2xl py-6 text-2xl shadow-xl hover:from-yellow-500 hover:to-yellow-400 transition-all transform hover:scale-105"
+            >
+              🏠 トップへ戻る
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // --- 登録画面 ---
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-yellow-100 to-pink-200">
@@ -449,6 +811,13 @@ function App() {
               disabled={crosses.length < 2}
             >
               <span className="inazuma-glow">⚡️ 十字架交換 ⚡️</span>
+            </button>
+            
+            <button
+              onClick={() => setPhase("menu")}
+              className="w-full bg-gray-300 text-gray-700 font-bold rounded-xl text-xl py-4 shadow hover:bg-gray-400 transition mt-3"
+            >
+              🏠 トップへ戻る
             </button>
           </div>
         </div>
